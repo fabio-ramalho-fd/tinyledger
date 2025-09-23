@@ -1,7 +1,17 @@
-# Compiled class file
-*.class
+# Maven
+/target/
+/.settings/
+/.classpath
+/.project
 
-# Log file
+# IntelliJ
+.idea/
+*.iml
+
+# OS
+.DS_Store
+
+# Logs
 *.log
 
 # BlueJ files
@@ -22,3 +32,18 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Maven wrapper
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+mvnw
+mvnw.cmd
+
+# Spring Boot specific
+*.h2.db
+*.h2.mv.db
+*.db
+*.sqlite
+
+# VSCode (se alguém abrir)
+.vscode/
