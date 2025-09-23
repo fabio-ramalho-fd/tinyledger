@@ -14,6 +14,8 @@ public class LedgerService {
     private final InMemoryMovementRepository movementRepository;
     private final Clock clock;
 
+    private final Object lock = new Object();
+
     public LedgerService(InMemoryMovementRepository movementRepository, Clock clock) {
         this.movementRepository = Objects.requireNonNull(movementRepository, "MovementRepository cannot be null");
         this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
@@ -21,33 +23,39 @@ public class LedgerService {
 
     public Movement deposit(Money amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
-        Movement movement = new Movement(MovementType.DEPOSIT, amount, clock.instant());
-        return movementRepository.save(movement);
+        synchronized (lock) {
+            Movement movement = new Movement(MovementType.DEPOSIT, amount, clock.instant());
+            return movementRepository.save(movement);
+        }
     }
 
     public Movement withdraw(Money amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
-
-        Money currentBalance = calculateBalance();
-        if (currentBalance.getAmount().compareTo(amount.getAmount()) < 0) {
-            throw new IllegalArgumentException(
-                    "Insufficient funds: current balance is " + currentBalance + ", requested " + amount
-            );
+        synchronized (lock) {
+            Money currentBalance = calculateBalanceInternal();
+            if (currentBalance.getAmount().compareTo(amount.getAmount()) < 0) {
+                throw new IllegalArgumentException(
+                        "Insufficient funds: current balance is " + currentBalance + ", requested " + amount
+                );
+            }
+            Movement movement = new Movement(MovementType.WITHDRAW, amount, clock.instant());
+            return movementRepository.save(movement);
         }
-
-        Movement movement = new Movement(MovementType.WITHDRAW, amount, clock.instant());
-        return movementRepository.save(movement);
     }
 
     public Money getBalance() {
-        return calculateBalance();
+        synchronized (lock) {
+            return calculateBalanceInternal();
+        }
     }
 
     public List<Movement> getAllMovements() {
-        return movementRepository.findAllOrderByTimestampDesc();
+        synchronized (lock) {
+            return movementRepository.findAllOrderByTimestampDesc();
+        }
     }
 
-    private Money calculateBalance() {
+    private Money calculateBalanceInternal() {
         List<Movement> allMovements = movementRepository.findAllOrderByTimestampDesc();
         BigDecimal balance = BigDecimal.ZERO;
 
