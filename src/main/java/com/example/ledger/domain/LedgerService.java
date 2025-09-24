@@ -1,6 +1,6 @@
 package com.example.ledger.domain;
 
-import com.example.ledger.repo.InMemoryMovementRepository;
+import com.example.ledger.repo.InMemoryTransactionRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -11,26 +11,26 @@ import java.util.Objects;
 @Service
 public class LedgerService {
 
-    private final InMemoryMovementRepository movementRepository;
+    private final InMemoryTransactionRepository transactionRepository;
     private final Clock clock;
 
     private final Object lock = new Object();
 
-    public LedgerService(InMemoryMovementRepository movementRepository, Clock clock) {
-        this.movementRepository = Objects.requireNonNull(movementRepository, "MovementRepository cannot be null");
-        this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
+    public LedgerService(InMemoryTransactionRepository transactionRepository, Clock clock) {
+        this.transactionRepository = Objects.requireNonNull(transactionRepository, "TransactionRepository can´t be null");
+        this.clock = Objects.requireNonNull(clock, "Clock can´t be null");
     }
 
-    public Movement deposit(Money amount) {
-        Objects.requireNonNull(amount, "Amount cannot be null");
+    public Transaction deposit(Money amount) {
+        Objects.requireNonNull(amount, "Amount can´t be null");
         synchronized (lock) {
-            Movement movement = new Movement(MovementType.DEPOSIT, amount, clock.instant());
-            return movementRepository.save(movement);
+            Transaction transaction = new Transaction(TransactionType.DEPOSIT, amount, clock.instant());
+            return transactionRepository.save(transaction);
         }
     }
 
-    public Movement withdraw(Money amount) {
-        Objects.requireNonNull(amount, "Amount cannot be null");
+    public Transaction withdraw(Money amount) {
+        Objects.requireNonNull(amount, "Amount can´t be null");
         synchronized (lock) {
             Money currentBalance = calculateBalanceInternal();
             if (currentBalance.getAmount().compareTo(amount.getAmount()) < 0) {
@@ -38,8 +38,8 @@ public class LedgerService {
                         "Insufficient funds: current balance is " + currentBalance + ", requested " + amount
                 );
             }
-            Movement movement = new Movement(MovementType.WITHDRAW, amount, clock.instant());
-            return movementRepository.save(movement);
+            Transaction transaction = new Transaction(TransactionType.WITHDRAW, amount, clock.instant());
+            return transactionRepository.save(transaction);
         }
     }
 
@@ -49,20 +49,20 @@ public class LedgerService {
         }
     }
 
-    public List<Movement> getAllMovements() {
+    public List<Transaction> getAllTransactions() {
         synchronized (lock) {
-            return movementRepository.findAllOrderByTimestampDesc();
+            return transactionRepository.findAllOrderByTimestampDesc();
         }
     }
 
     private Money calculateBalanceInternal() {
-        List<Movement> allMovements = movementRepository.findAllOrderByTimestampDesc();
+        List<Transaction> allTransactions = transactionRepository.findAllOrderByTimestampDesc();
         BigDecimal balance = BigDecimal.ZERO;
 
-        for (Movement movement : allMovements) {
-            switch (movement.getType()) {
-                case DEPOSIT -> balance = balance.add(movement.getAmount().getAmount());
-                case WITHDRAW -> balance = balance.subtract(movement.getAmount().getAmount());
+        for (Transaction transaction : allTransactions) {
+            switch (transaction.getType()) {
+                case DEPOSIT -> balance = balance.add(transaction.getAmount().getAmount());
+                case WITHDRAW -> balance = balance.subtract(transaction.getAmount().getAmount());
             }
         }
 

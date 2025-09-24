@@ -4,24 +4,24 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class Movement {
+public final class Transaction {
     private final UUID id;
-    private final MovementType type;
+    private final TransactionType type;
     private final Money amount;
     private final Instant createdAt;
 
-    public Movement(MovementType type, Money amount, Instant createdAt) {
+    public Transaction(TransactionType type, Money amount, Instant createdAt) {
         this.id = UUID.randomUUID();
-        this.type = Objects.requireNonNull(type, "Movement type cannot be null");
-        this.amount = Objects.requireNonNull(amount, "Amount cannot be null");
-        this.createdAt = Objects.requireNonNull(createdAt, "Created at timestamp cannot be null");
+        this.type = Objects.requireNonNull(type, "Transaction type can't be null");
+        this.amount = Objects.requireNonNull(amount, "Amount can't be null");
+        this.createdAt = Objects.requireNonNull(createdAt, "Created at timestamp can't be null");
     }
 
     public UUID getId() {
         return id;
     }
 
-    public MovementType getType() {
+    public TransactionType getType() {
         return type;
     }
 
@@ -37,8 +37,8 @@ public final class Movement {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        Movement movement = (Movement) obj;
-        return Objects.equals(id, movement.id);
+        Transaction transaction = (Transaction) obj;
+        return Objects.equals(id, transaction.id);
     }
 
     @Override
@@ -48,7 +48,7 @@ public final class Movement {
 
     @Override
     public String toString() {
-        return "Movement{" +
+        return "Transaction{" +
                 "id=" + id +
                 ", type=" + type +
                 ", amount=" + amount +

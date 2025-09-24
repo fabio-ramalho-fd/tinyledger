@@ -1,7 +1,7 @@
 package com.example.ledger.domain;
 
 
-public enum MovementType {
+public enum TransactionType {
     DEPOSIT,
     WITHDRAW
 }

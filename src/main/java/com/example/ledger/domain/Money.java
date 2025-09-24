@@ -36,25 +36,12 @@ public final class Money {
         }
         return of(new BigDecimal(trimmed));
     }
-    
-    public static Money zero() {
-        return new Money(BigDecimal.ZERO);
-    }
-    
+
     public Money add(Money other) {
-        Objects.requireNonNull(other, "Money to add cannot be null");
+        Objects.requireNonNull(other, "Money to add can't be null");
         return new Money(this.amount.add(other.amount));
     }
-    
-    public Money subtract(Money other) {
-        Objects.requireNonNull(other, "Money to subtract cannot be null");
-        BigDecimal result = this.amount.subtract(other.amount);
-        if (result.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Cannot subtract " + other + " from " + this + " as result would be negative");
-        }
-        return new Money(result);
-    }
-    
+
     public BigDecimal getAmount() {
         return amount;
     }
