@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,6 +39,20 @@ public class GlobalExceptionHandler {
 
         LOGGER.warn("Validation error: {}", message);
         ErrorResponse error = ErrorResponse.of(message, "VALIDATION_ERROR");
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        LOGGER.warn("Bad request - malformed JSON or missing body: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of("Invalid request body", "BAD_REQUEST");
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        LOGGER.warn("Bad request - unsupported media type: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of("Invalid request body", "BAD_REQUEST");
         return ResponseEntity.badRequest().body(error);
     }
 
