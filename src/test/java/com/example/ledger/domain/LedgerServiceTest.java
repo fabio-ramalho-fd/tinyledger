@@ -290,7 +290,6 @@ class LedgerServiceTest {
         
         // when
         service.deposit(amount);
-        
         // then
         verify(transactionRepository).save(argThat(t -> 
             t.getCreatedAt().equals(fixedInstant)
